@@ -19,4 +19,5 @@ RUN mkdir -p /usr/src/php/ext/redis \
     
 USER root
 
-CMD ["php-fpm", "-y", "/usr/local/etc/php-fpm.conf", "-R"]
+# Run the entrypoint file.
+ENTRYPOINT [ "./bash/entrypoint.sh" ]

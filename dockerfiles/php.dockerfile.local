@@ -1,0 +1,81 @@
+# Used for DEV & Local.
+FROM php:8.2-fpm as php
+
+ARG UID
+ARG GID
+
+ENV UID=${UID}
+ENV GID=${GID}
+
+# Set environment variables
+ENV PHP_OPCACHE_ENABLE=1
+ENV PHP_OPCACHE_ENABLE_CLI=0
+ENV PHP_OPCACHE_VALIDATE_TIMESTAMPS=0
+ENV PHP_OPCACHE_REVALIDATE_FREQ=0
+
+# Install dependencies.
+RUN apt-get update && apt-get install -y unzip libpq-dev libcurl4-gnutls-dev nginx libonig-dev
+
+# Install PHP extensions.
+RUN docker-php-ext-install mysqli pdo pdo_mysql bcmath curl opcache mbstring
+
+# Clean up
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy composer executable.
+COPY --from=composer:2.7.1 /usr/bin/composer /usr/bin/composer
+
+# Copy configuration files.
+COPY ./dockerfiles/php/php.ini /usr/local/etc/php/php.ini
+COPY ./dockerfiles/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+COPY ./dockerfiles/nginx/default.conf /etc/nginx/nginx.conf
+
+# Install Xdebug
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+
+RUN mkdir -p /var/www/html
+
+# Set working directory to /var/www/html.
+WORKDIR /var/www/html
+
+# MacOS staff group's gid is 20, so is the dialout group in alpine linux. We're not using it, let's just remove it.
+RUN delgroup dialout
+
+# RUN addgroup -g ${GID} --system laravel
+# RUN adduser -G laravel --system -D -s /bin/sh -u ${UID} laravel
+
+RUN sed -i "s/user = www-data/user = laravel/g" /usr/local/etc/php-fpm.d/www.conf
+RUN sed -i "s/group = www-data/group = laravel/g" /usr/local/etc/php-fpm.d/www.conf
+RUN echo "php_admin_flag[log_errors] = on" >> /usr/local/etc/php-fpm.d/www.conf
+
+# Copy files from current folder to container current folder (set in workdir).
+COPY --chown=laravel:laravel . .
+
+# Create laravel caching folders.
+RUN mkdir -p /var/www/html/storage/framework /var/www/html/storage/framework/cache \
+    /var/www/html/storage/framework/testing /var/www/html/storage/framework/sessions \
+    /var/www/html/storage/framework/views
+
+RUN mkdir -p /var/www/html/storage /var/www/html/storage/logs /var/www/html/storage/framework \
+    /var/www/html/storage/framework/sessions /var/www/bootstrap
+
+# Fix files ownership.
+RUN chown -R laravel /var/www/html/storage
+RUN chown -R laravel /var/www/html/storage/framework
+RUN chown -R laravel /var/www/html/storage/framework/sessions
+
+# Set correct permission.
+RUN chmod -R 775 /var/www/html/storage
+RUN chmod -R 775 /var/www/html/storage/logs
+RUN chmod -R 755 /var/www/html/storage/framework
+RUN chmod -R 755 /var/www/html/storage/framework/sessions
+RUN chmod -R 755 /var/www/bootstrap
+
+# # Adjust user permission & group
+# RUN usermod --uid 1000 laravel
+# RUN groupmod --gid 1001 laravel
+
+USER laravel
+
+# Run the entrypoint file.
+ENTRYPOINT [ "./bash/entrypoint.local.sh" ]

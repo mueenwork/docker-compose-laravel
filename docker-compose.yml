@@ -25,11 +25,13 @@ services:
       - laravel
 
   mysql:
-    image: mariadb:10.6
+    image: mariadb:10.11
     restart: unless-stopped
     tty: true
     ports:
       - "3306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
     environment:
       MYSQL_DATABASE: homestead
       MYSQL_USER: homestead
@@ -43,12 +45,14 @@ services:
   php:
     build:
       context: ./dockerfiles
-      dockerfile: php.dockerfile
+      dockerfile: php.root.dockerfile
       args:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
-    ports:
-      - "9000:9000"
+    # ports:
+    #   - "9000:9000"
+    environment:
+      - DB_HOST=docker-compose-laravel-mysql-1
     volumes:
       - ./src:/var/www/html:delegated
     networks:
@@ -65,7 +69,7 @@ services:
   composer:
     build:
       context: ./dockerfiles
-      dockerfile: php.dockerfile
+      dockerfile: php.root.dockerfile
       args:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
@@ -93,7 +97,7 @@ services:
   artisan:
     build:
       context: ./dockerfiles
-      dockerfile: php.dockerfile
+      dockerfile: php.root.dockerfile
       args:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
