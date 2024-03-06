@@ -13,7 +13,7 @@ ps: ## Show containers.
 	@docker compose ps
 
 build: ## Build all containers for DEV
-	@docker build --no-cache . -f ./dockerfiles/php.dockerfile.local
+	@docker build --no-cache . -f ./dockerfiles/php.local.dockerfile --build-arg GID=1000 --build-arg UID=1000
 
 build-prod: ## Build all containers for PROD
 	@docker build --no-cache . -f ./Dockerfile
@@ -45,6 +45,18 @@ ssh-app: ## SSH into APP container
 
 ssh-php: ## SSH into PHP container
 	docker exec -it ${CONTAINER_PHP} sh
+
+php-ini: ## Check loaded php configurations in PHP container
+	docker exec -it ${CONTAINER_PHP} php -i | grep "Loaded Configuration File"
+
+php-opcache: ## Check opcahe in PHP container
+	docker exec ${CONTAINER_PHP} php -i | grep "opcache"
+
+php-ps: ## List Processes in PHP container
+	docker exec ${CONTAINER_PHP} ps
+
+php-reset: ## Kill master PHP process, clear the OPcache completely by forcing PHP-FPM to reload all PHP files and recompile them
+	docker exec ${CONTAINER_PHP} kill -USR2 1
 
 ssh-db: ## SSH into DB container
 	docker exec -it ${CONTAINER_DATABASE} sh

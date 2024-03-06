@@ -90,3 +90,6 @@ To see the dashboard and view any emails coming through the system, visit [local
 make ssh 
 chown -R laravel /var/www/html/storage 
 chmod -R 775 /var/www/html/storage
+
+
+docker build -t php . -f ./dockerfiles/php.local.dockerfile --build-arg GID=1000 --build-arg UID=1000

@@ -14,8 +14,11 @@ services:
         - GID=${GID:-1000}
     ports:
       - "80:80"
+    environment:
+      - UID=1000
+      - GID=1000
     volumes:
-      - ./src:/var/www/html:delegated
+      - ./src:/var/www/html:delegate
     depends_on:
       - php
       - redis
@@ -45,14 +48,22 @@ services:
   php:
     build:
       context: ./dockerfiles
-      dockerfile: php.root.dockerfile
+      dockerfile: php.local.dockerfile
       args:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
     # ports:
     #   - "9000:9000"
-    environment:
-      - DB_HOST=docker-compose-laravel-mysql-1
+    env_file:
+      - .env
+    # environment:
+    #   - UID=1000
+    #   - GID=1000
+    #   - DB_HOST=docker-compose-laravel-mysql-1
+    #   - PHP_OPCACHE_ENABLE=1
+    #   - PHP_OPCACHE_ENABLE_CLI=1
+    #   - PHP_OPCACHE_VALIDATE_TIMESTAMP=1
+    #   - PHP_OPCACHE_REVALIDATE_FREQ=60
     volumes:
       - ./src:/var/www/html:delegated
     networks:
@@ -69,10 +80,13 @@ services:
   composer:
     build:
       context: ./dockerfiles
-      dockerfile: php.root.dockerfile
+      dockerfile: php.local.dockerfile
       args:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
+    environment:
+      - UID=1000
+      - GID=1000
     volumes:
       - ./src:/var/www/html
     depends_on:
@@ -97,10 +111,13 @@ services:
   artisan:
     build:
       context: ./dockerfiles
-      dockerfile: php.root.dockerfile
+      dockerfile: php.local.dockerfile
       args:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
+    environment:
+      - UID=1000
+      - GID=1000
     volumes:
       - ./src:/var/www/html:delegated
     depends_on:
