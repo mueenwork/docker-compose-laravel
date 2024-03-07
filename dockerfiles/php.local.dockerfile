@@ -8,6 +8,10 @@ ARG GID
 ENV UID=${UID}
 ENV GID=${GID}
 
+
+# copy entrypoint files
+COPY ./dockerfiles/bash/entrypoint-prod-sh /usr/local/bin/
+
 # Set environment variables
 # ENV PHP_OPCACHE_ENABLE=1
 # ENV PHP_OPCACHE_ENABLE_CLI=0
@@ -82,4 +86,4 @@ RUN chmod -R 755 /var/www/bootstrap
 USER laravel
 
 # Run the entrypoint file.
-ENTRYPOINT [ "./bash/entrypoint.local.sh" ]
+ENTRYPOINT [ "/usr/local/bin/entrypoint.prod.sh" ]

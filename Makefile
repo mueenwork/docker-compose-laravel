@@ -12,14 +12,33 @@ help: ## Print help.
 ps: ## Show containers.
 	@docker compose ps
 
-build: ## Build all containers for DEV
-	@docker build --no-cache . -f ./dockerfiles/php.local.dockerfile --build-arg GID=1000 --build-arg UID=1000
+# build: ## Build all containers for DEV
+# 	@docker build --no-cache . -f ./dockerfiles/php.local.dockerfile --build-arg GID=1000 --build-arg UID=1000
 
-build-prod: ## Build all containers for PROD
-	@docker build --no-cache . -f ./Dockerfile
+# build-prod: ## Build all containers for PROD
+# 	@docker build --no-cache . -f ./Dockerfile
 
-start: ## Start all containers
+build-compose: ## Docker compose build --no-cache
+	@docker-compose build --no-cache
+
+build-compose-prod: ## Docker compose build prod--no-cache
+	@docker-compose -f docker-compose.prod.yml up -d --build
+
+cup: ## Compose up local environment
+	@docker-compose -f docker-compose.yml up
+
+cubp: ## Compose up build prod environment
+	@UID=$(shell id -u) GID=$(shell id -g) docker-compose -f docker-compose.prod.yml up --build
+## UID=$(id -u) GID=$(id -g) docker-compose -f docker-compose.prod.yml up --build
+
+up-prod: ## Compose up prod environment
+	@UID=$(shell id -u) GID=$(shell id -g) docker-compose -f docker-compose.prod.yml up -d --build
+
+start-dev: ## Start all containers
 	@docker compose up --force-recreate -d
+
+start-compose-prod: ## Start Docker containers defined in the
+	@docker compose -f docker-compose.prod.yml up --detach
 
 fresh:  ## Destroy & recreate all uing dev containers.
 	make stop
@@ -33,12 +52,15 @@ fresh-prod: ## Destroy & recreate all using prod containers.
 	make build-prod
 	make start
 
-stop: ## Stop all containers
+stop-dev: ## Stop all Dev containers
 	@docker compose stop
 
-restart: stop start ## Restart all containers
+restart: stop-dev start-dev ## Restart all dev containers
 
 destroy: stop ## Destroy all containers
+
+# destroy-compose: ## stop and remove containers created by docker-compose along with associated volumes
+#     @docker-compose down --volumes
 
 ssh-app: ## SSH into APP container
 	docker exec -it ${CONTAINER_NGINX} sh
