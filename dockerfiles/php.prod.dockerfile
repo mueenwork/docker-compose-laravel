@@ -11,9 +11,6 @@ ENV GID=${GID}
 ENV USER=root
 ENV GROUP=root
 
-# copy entrypoint files
-COPY dockerfiles/bash/entrypoint-prod.sh ~
-
 # Set environment variables
 # ENV PHP_OPCACHE_ENABLE=1
 # ENV PHP_OPCACHE_ENABLE_CLI=0
@@ -97,10 +94,15 @@ RUN chmod -R 755 /var/www/bootstrap
 # Set the final user
 # USER $user
 
-COPY ./bash/entrypoint.prod.sh /var/www/html/entrypoint.prod.sh
+# Create the target directory if it doesn't exist
+RUN mkdir -p /dockerfiles/bash
+
+# Copy the entrypoint script to the target directory
+COPY ./dockerfiles/bash/entrypoint.prod.sh /dockerfiles/bash/entrypoint.prod.sh
 
 # Set executable permissions on the entrypoint script
-RUN chmod +x /var/www/html/entrypoint.prod.sh
+RUN chmod +x /dockerfiles/bash/entrypoint.prod.sh
 
-# Run the entrypoint script
-ENTRYPOINT [ "/usr/local/bin/entrypoint.prod.sh" ]
+# Copy the entrypoint script to the root directory
+COPY ./dockerfiles/bash/entrypoint.prod.sh /entrypoint.prod.sh
+ENTRYPOINT [ "/entrypoint.prod.sh" ]

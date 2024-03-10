@@ -18,10 +18,10 @@ ps: ## Show containers.
 # build-prod: ## Build all containers for PROD
 # 	@docker build --no-cache . -f ./Dockerfile
 
-build-compose: ## Docker compose build --no-cache
+build-compose: ## Docker compose build Dev Env --no-cache
 	@docker-compose build --no-cache
 
-build-compose-prod: ## Docker compose build prod--no-cache
+build-compose-prod: ## Docker compose build Prod Env --no-cache
 	@docker-compose -f docker-compose.prod.yml up -d --build
 
 cup: ## Compose up local environment
