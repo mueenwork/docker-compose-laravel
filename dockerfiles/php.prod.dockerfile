@@ -11,9 +11,6 @@ ENV GID=${GID}
 ENV USER=root
 ENV GROUP=root
 
-# copy entrypoint files
-COPY dockerfiles/bash/entrypoint-prod.sh ~
-
 # Set environment variables
 # ENV PHP_OPCACHE_ENABLE=1
 # ENV PHP_OPCACHE_ENABLE_CLI=0
@@ -59,6 +56,7 @@ RUN if [ $(id -u) -ne 0 ]; then \
         delgroup dialout; \
         addgroup -g ${GID} --system laravel; \
         adduser -G laravel --system -D -s /bin/sh -u ${UID} laravel; \
+        adduser laravel nginx; \
         # sed -i "s/user = www-data/user = laravel/g" /usr/local/etc/php-fpm.d/www.conf; \
         # sed -i "s/group = www-data/group = laravel/g" /usr/local/etc/php-fpm.d/www.conf; \
         chown -R "$USER:$GROUP" . . ;\
@@ -66,6 +64,8 @@ RUN if [ $(id -u) -ne 0 ]; then \
         export USER=root; \
         export GROUP=root; \
         chown -R "$USER:$GROUP" . . ; \
+        # Add laravel user to the nginx group
+        adduser laravel nginx; \
         # sed -i "s/user = www-data/user = root/g" /usr/local/etc/php-fpm.d/www.conf; \
         # sed -i "s/group = www-data/group = root/g" /usr/local/etc/php-fpm.d/www.conf; \
     fi
@@ -79,6 +79,7 @@ RUN mkdir -p /var/www/html/storage /var/www/html/storage/logs /var/www/html/stor
     /var/www/html/storage/framework/sessions /var/www/bootstrap
 
 # Fix files ownership.
+RUN chown -R $USER /scripts/entrypoint.prod.sh
 RUN chown -R $USER /var/www/html/storage
 RUN chown -R $USER /var/www/html/storage/framework
 RUN chown -R $USER /var/www/html/storage/framework/sessions
@@ -96,11 +97,13 @@ RUN chmod -R 755 /var/www/bootstrap
 
 # Set the final user
 # USER $user
+USER laravel
 
-COPY ./bash/entrypoint.prod.sh /var/www/html/entrypoint.prod.sh
+# Copy the entrypoint script from the host into the container
+COPY ./bash/entrypoint.prod.sh /scripts/entrypoint.prod.sh
 
-# Set executable permissions on the entrypoint script
-RUN chmod +x /var/www/html/entrypoint.prod.sh
+# Make the entrypoint script executable
+RUN chmod +x /scripts/entrypoint.prod.sh
 
 # Run the entrypoint script
-ENTRYPOINT [ "/usr/local/bin/entrypoint.prod.sh" ]
+ENTRYPOINT ["/scripts/entrypoint.prod.sh"]
