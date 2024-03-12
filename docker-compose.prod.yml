@@ -17,7 +17,7 @@ services:
       - UID=1000
       - GID=1000
     volumes:
-      - ./src:/var/www/html:delegate
+      - ./src:/var/www/html:delegated
     depends_on:
       - php
       - redis
