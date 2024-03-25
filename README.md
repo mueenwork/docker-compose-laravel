@@ -100,3 +100,10 @@ docker build -t php . -f ./dockerfiles/php.local.dockerfile --build-arg GID=1000
 ``` bash
 find . -type f ! \( -path "./src/*" -o -path "./mysql/*" -o -path "./.git/*" \)
 ```
+
+## Setting up Laravel Source in /src folder
+
+To get started, **delete any files in /src ** and then do one of the following:
+
+- Clone your project or copy all of the files directly into this `src` directory.
+- Spin up the Docker network by following the instructions on the this, or install a brand new Laravel project by running `docker-compose run --rm composer create-project laravel/laravel .` in your terminal after this command `cd /src`.
