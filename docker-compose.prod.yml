@@ -52,7 +52,7 @@ services:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
     env_file:
-      - ./src/.env
+      - ./src/.env.prod
     volumes:
       - ./src:/var/www/html:delegated
     networks:
