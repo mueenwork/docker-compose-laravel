@@ -94,7 +94,8 @@ chmod -R 775 /var/www/html/storage
 
 docker build -t php . -f ./dockerfiles/php.local.dockerfile --build-arg GID=1000 --build-arg UID=1000
 
-
+export UID=$(id -u)
+export GID=$(id -g)
 
 ### List all files in directory excluding mysql, src, git
 ``` bash
